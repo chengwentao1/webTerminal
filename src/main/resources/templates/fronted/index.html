@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh_CN">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>webssh</title>
+
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" type="text/css" href="/static/assets/css/index_style.css">
+    <link rel="shortcut icon" href="/static/assets/img/favicon.ico">
+
+    <script type="text/javascript" src="/static/plugins/jquery/jquery-3.4.1.min.js"></script>
+    <!-- 矢量函数库 -->
+    <script type="text/javascript" src="/static/plugins/vector/vector.js"></script>
+
+    <script src="/static/assets/js/jssh.js" charset="utf-8"></script>
+
+    <!-- xterm库 -->
+    <link rel="stylesheet" href="/static/plugins/xterm/xterm.css"/>
+    <script src="/static/plugins/xterm/xterm.js" charset="utf-8"></script>
+    <!-- layui库 -->
+    <script src="/static/plugins/layui/layui.js"></script>
+</head>
+
+<body>
+
+<div id="container" style="width: 100%; height: 100%">
+    <div id="output">
+        <script type="text/javascript">
+            // 渲染背景
+            $(function () {
+                var victor = Victor("container", "output");
+
+                // 焦点获取
+                $("#host").focus();
+
+                // 监听enter键
+                $(document).keydown(function (event) {
+                    if (event.keyCode == 13) {
+                        $("#btn").click();
+                    }
+                });
+            });
+        </script>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // 打开弹出层
+    layui.use('layer', function () {
+        var layer = layui.layer;
+        layer.open({
+            type: 1,
+            title: "",
+            closeBtn: 0,
+            // maxmin: true,
+            // moveOut: true,
+            content: $('#entry_form')
+            // 这里content是一个DOM，注意：最好该元素要存放在body最外层，否则可能被其它的相对元素所影响
+        });
+    });
+
+
+</script>
+
+</body>
+<!-- 为了防止出现位置的相对改变，放在body外面 -->
+<div class="containerT" id="con">
+    <form class="layui-form" id="entry_form" lay-filter="frm" action="connect" method="post">
+
+        <div class="layui-form-item">
+            <label class="layui-icon layui-icon-username">主机名</label>
+            <input class="layui-input" type="text" name="host" id="host" required="required" value="127.0.0.1">
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-icon layui-icon-username">端口</label>
+            <input class="layui-input" required="required" max="65535" min="0" type="number" name="port" id="port"
+                   value="22">
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-icon layui-icon-username">用户名</label>
+            <input class="layui-input" required="required" type="text" name="username" id="username" value="root">
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-icon layui-icon-username">密码</label>
+            <input class="layui-input" required="required" type="text" name="password" id="password" value="root">
+        </div>
+
+        <input type="hidden" id="command" name="command" value="">
+        <input type="hidden" id="operate" name="operate" value="connect">
+        <button lay-submit lay-filter="*" type="submit" id="btn">连接</button>
+        <div id="prompt" class="prompt"></div>
+    </form>
+</div>
+<script>
+    var res = false;
+    layui.use(['form', 'layer'], function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var layer = layui.layer;
+
+        form.on('submit(frm)', function (data) {
+            var frmData = form.val("frm");
+            // 向服务器确认能否连接上主机
+
+            // 改为同步，防止没获取信息就返回了
+            $.ajaxSettings.async = false;
+            $.post(
+                "testConnect", frmData,
+                function (data) {
+                    res = true
+                    // if (data.res == "true") {
+                    //
+                    //     res = true;console.log("res: "+res);
+                    // } else {
+                    //     layer.alert("无法连接到主机：" + frmData["host"] + "\n错误信息为: " + data.msg);
+                    //     res = false;
+                    // }
+                    return;
+                }
+            );
+
+            // console.log(data.elem) //被执行事件的元素DOM对象，一般为button对象
+            // console.log(data.form) //被执行提交的form对象，一般在存在form标签时才会返回
+            // console.log(data.field) //当前容器的全部表单字段，名值对形式：{name: value}
+            console.log('res: ' + res);
+            return res; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>
+
+</html>
